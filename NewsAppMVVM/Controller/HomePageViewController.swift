@@ -13,6 +13,7 @@ protocol IHomePageViewController{
 }
 
 class HomePageViewController: UIViewController , IHomePageViewController  {
+    var homePageVM : HomePageViewModel!
     func reloadCollectinView(flag: Bool) {
         if flag{
             DispatchQueue.main.async {
@@ -21,7 +22,7 @@ class HomePageViewController: UIViewController , IHomePageViewController  {
                 
             }
             self.newsCollectionView.addInfiniteScroll { collection in
-                HomePageViewModel.homePageVM.fetchMoreNewsData()
+                self.homePageVM.fetchMoreNewsData()
                 DispatchQueue.main.async {
                     self.newsCollectionView.reloadData()
                 }
@@ -42,27 +43,30 @@ class HomePageViewController: UIViewController , IHomePageViewController  {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavTitle()
-        getNewsData()
-        view.backgroundColor = .white
-        setupCollectionViewLayouts()
-        setupConstraints()
+        homePageVM = .init(networkManager: NetworkManager(), firebaseManager: FirebaseManager(), delegate: self)
+        setupNavigationController()
+        self.homePageVM.fetchNewDatas()
+        
+       // setupCollectionViewLayouts()
+   
         setupCollectionViews()
+        setupConstraints()
     }
     
-    func setupNavTitle(){
+    func setupNavigationController(){
+        self.view.backgroundColor = .white
         self.navigationItem.title = "NEWS APP"
         self.navigationController?.setupNavBar(backgroundColor: UIColor.systemOrange, textColor: UIColor.black, tintColor: UIColor.black)
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.close, target: self, action: #selector(logOut))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Exit", style: UIBarButtonItem.Style.plain, target: self, action: #selector(logOut))
     }
     @objc func logOut(){
-        HomePageViewModel.homePageVM.logOut()
-        self.dismiss(animated: true)
+        self.homePageVM.logOut()
+        self.dismiss(animated : true)
     }
     
     func getNewsData(){
-        HomePageViewModel.homePageVM.IhomePageVC = self
-        HomePageViewModel.homePageVM.fetchNewDatas()
+     
+       
     }
 }
 
@@ -70,18 +74,23 @@ extension HomePageViewController : UICollectionViewDelegate , UICollectionViewDe
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == categorycollectionView{
-            return HomePageViewModel.homePageVM.numberofItemsInSection(at: 0)
+            return self.homePageVM.numberofItemsInSection(at: 0)
         }else{
-            return HomePageViewModel.homePageVM.numberofItemsInSection(at: 1)
+            return self.homePageVM.numberofItemsInSection(at: 1)
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == categorycollectionView{
-            return HomePageViewModel.homePageVM.cellForItem(collectionView: collectionView, indexPath: indexPath, cellId: CategoryCell.id)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCell.id, for: indexPath) as! CategoryCell
+            cell.homepageVM = homePageVM
+            cell.setupCategoryButtons(title: homePageVM.getCategory(indexPath: indexPath))
+            return cell
         }
         
-        return HomePageViewModel.homePageVM.cellForItem(collectionView: collectionView, indexPath: indexPath, cellId: NewsCell.id)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NewsCell.id, for: indexPath) as! NewsCell
+        cell.configureNewsCell(cellViewModel: self.homePageVM.newCellViewModels[indexPath.row])
+        return cell
         }
   
     private func setupCollectionViews(){
@@ -97,11 +106,23 @@ extension HomePageViewController : UICollectionViewDelegate , UICollectionViewDe
     private func setupCollectionViewLayouts(){
      let categoryHeight =  self.view.frame.height * 0.06
         let categotyWidth = self.view.frame.height * 0.12
-        categorycollectionView = UICollectionView(frame: .zero, collectionViewLayout: HomePageViewModel.homePageVM.categoryCollectionViewSetup(height: categoryHeight, width: categotyWidth))
+        let categoryCollectionlayout = UICollectionViewFlowLayout()
+        categoryCollectionlayout.itemSize = CGSize(width: categotyWidth , height: categoryHeight )
+        categoryCollectionlayout.scrollDirection = .horizontal
+        categoryCollectionlayout.minimumLineSpacing = 15
+        categoryCollectionlayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        categorycollectionView = UICollectionView(frame: .zero, collectionViewLayout: categoryCollectionlayout)
+        
+        
         
         let newsHeight = (self.view.frame.height - categoryHeight) / 1.75
         let newsWidth = self.view.frame.width - 1
-        newsCollectionView = UICollectionView(frame: .zero, collectionViewLayout:HomePageViewModel.homePageVM.newsCollectionViewSetup(height: newsHeight, width: newsWidth))
+        let newsCollectionLayout = UICollectionViewFlowLayout()
+       newsCollectionLayout.itemSize = CGSize(width: newsWidth , height: newsHeight)
+        newsCollectionLayout.scrollDirection = .vertical
+        newsCollectionLayout.minimumInteritemSpacing = 15
+        newsCollectionLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        newsCollectionView = UICollectionView(frame: .zero, collectionViewLayout : newsCollectionLayout)
         
       
     }

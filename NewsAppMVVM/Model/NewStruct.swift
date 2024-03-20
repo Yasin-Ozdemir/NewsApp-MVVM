@@ -9,11 +9,11 @@ import Foundation
 // MARK: - New
 struct New: Codable {
     let success: Bool
-    let result: [Result]
+    let result: [Results]
 }
 
 // MARK: - Result
-struct Result: Codable {
+struct Results: Codable {
     let key: String
     let url: String
     let description: String

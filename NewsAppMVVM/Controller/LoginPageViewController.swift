@@ -9,7 +9,7 @@ import UIKit
 
 class LoginPageViewController: UIViewController {
    
-    
+    var signPageVM = SignPagesViewModel()
     private let logInImageView :UIImageView = {
        var imageView = UIImageView()
         imageView.image = UIImage(systemName: "person.crop.circle")
@@ -92,6 +92,7 @@ class LoginPageViewController: UIViewController {
     @objc func pushCreateVC(){
         print("create user")
         let createVC = CreateUserPageViewController()
+        createVC.signPagesViewModel = self.signPageVM
         self.navigationController!.pushViewController(createVC, animated: true)
     }
     
@@ -100,14 +101,13 @@ class LoginPageViewController: UIViewController {
         let mail = mailTextField.text!
         let password = passwordTextField.text!
         if mail.isEmpty == false && password.isEmpty == false{
-            SignPagesViewModel.signPagesVM.signIn(mail: mail, password: password) { err in
+            self.signPageVM.signIn(mail: mail, password: password) { _ , err in
                 if err != nil{
                     self.present(AlertManager.manager.showAlert(title: "ERROR", message: err!.localizedDescription), animated: true)
                 }else{
                     self.pushHomeVC()
                 }
             }
-           
         }else{
             self.present(AlertManager.manager.showAlert(title: "ERROR", message: "Please Enter Your Mail/Password"), animated: true)
         }
@@ -116,8 +116,7 @@ class LoginPageViewController: UIViewController {
     
     func pushHomeVC(){
         let homePageVC = UINavigationController(rootViewController: HomePageViewController())
-        homePageVC.modalPresentationStyle = .fullScreen
-        self.present(homePageVC, animated: true)
+        self.navigationController?.pushViewController(homePageVC, animated: true)
     }
     
 

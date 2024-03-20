@@ -7,15 +7,13 @@
 
 import Foundation
 
-class NetworkManager{
-    
-    static let shared = NetworkManager()
-    private init(){
-        
-    }
- 
-    
-    func downloadNewData(page : Int ,category : String , completion : @escaping ([Result]? , Error?) -> Void){
+protocol INetworkManager{
+    func downloadNewData(page : Int ,category : String , completion : @escaping ([Results]? , Error?) -> Void)
+}
+class NetworkManager : INetworkManager{
+    var httpClient : IHttpClient = HttpClient()
+   
+    func downloadNewData(page : Int ,category : String , completion : @escaping ([Results]? , Error?) -> Void){
         print("------süreç başlıyo ------")
      
         let headers = [
@@ -28,32 +26,17 @@ class NetworkManager{
                                             timeoutInterval: 10.0)
         request.httpMethod = "GET"
         request.allHTTPHeaderFields = headers
-
-        let session = URLSession.shared
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-            
-          if (error != nil) {
-            print("server error")
-          } else {
-              print("------süreç başladı ------")
-            let httpResponse = response as? HTTPURLResponse
-              if httpResponse?.statusCode == 200{
-                  if let data = data{
-                      do{
-                          let new = try JSONDecoder().decode(New.self, from: data)
-                          completion(new.result , nil)
-                          
-                      }catch{ print("decode error")}
-                 
-                  }else{
-                      print("data error")
-                  }
-              }else{
-                  print("service error")
-              }
-          }
-        })
-
-        dataTask.resume()
+        
+        httpClient.execute(request: request as URLRequest) { result in
+            switch result{
+            case .success(let data) :
+                do{
+                  let new =   try JSONDecoder().decode(New.self, from: data)
+                    completion(new.result, nil)
+                }catch{}
+            case .failure(let err) : completion(nil , err)
+            }
+        }
+        
     }
 }

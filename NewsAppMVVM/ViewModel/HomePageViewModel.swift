@@ -6,59 +6,77 @@
 //
 
 import Foundation
-import UIKit
 
 
-private protocol IHomePageViewModel{
-    func fetchNewDatas() -> Void
+protocol IHomePageViewModel{
+    func fetchNewDatas()
+    func clearNews()
 }
 
 class HomePageViewModel : IHomePageViewModel{
   
-    private init(){
-        
-    }
-      var IhomePageVC : IHomePageViewController = HomePageViewController()
+  
+    var IhomePageVC : IHomePageViewController!
     
-    static let homePageVM = HomePageViewModel()
+
+    var networkManager : INetworkManager!
+    init(networkManager : INetworkManager , firebaseManager : IFireBaseManager , delegate : IHomePageViewController) {
+        self.networkManager = networkManager
+        self.firebaseManager = firebaseManager
+        self.IhomePageVC = delegate
+    }
     static var currentCategory : String = "general"
     static var currentPage : Int = 0
-    let firebaseManager = FirebaseManager()
+    var firebaseManager : IFireBaseManager!
+    private var categoryList = ["General" , "Economy" , "Technology" , "Health" , "Sport"]
     
+     var newCellViewModels : [NewsCellViewModel] = []
+
+    func clearNews(){
+        self.newCellViewModels.removeAll()
+    }
     func fetchNewDatas() {
 
-        NetworkManager.shared.downloadNewData(page: HomePageViewModel.currentPage, category: HomePageViewModel.currentCategory) { result, err in
+        networkManager.downloadNewData(page: HomePageViewModel.currentPage, category: HomePageViewModel.currentCategory) { result, err in
                 if err != nil{
                     print(err?.localizedDescription)
                 }else{
                     
                     if let result = result{
-                        DispatchQueue.main.async {
+                   
                           
-                                self.newsList = result
+                            for result in result{
+                                
+                                self.newCellViewModels.append(NewsCellViewModel(title: result.name, description: result.description, imageUrlString: result.image, newUrlString: result.url))
+                            }
                             self.IhomePageVC.reloadCollectinView(flag: true)
-                        }
+                        
                     }else{
+                        self.IhomePageVC.reloadCollectinView(flag: false)
                         print("result error")
                     }
                 }
             }
         }
     
+    
+    
     func fetchMoreNewsData(){
         HomePageViewModel.currentPage += 1
-        NetworkManager.shared.downloadNewData(page: HomePageViewModel.currentPage, category: HomePageViewModel.currentCategory) { result, err in
+        networkManager.downloadNewData(page: HomePageViewModel.currentPage, category: HomePageViewModel.currentCategory) { result, err in
                 if err != nil{
                     print(err?.localizedDescription)
                 }else{
                     
                     if let result = result{
-                        DispatchQueue.main.async {
+                       
                             for result in result{
-                                self.newsList.append(result)
+                                // cell view model oluşturualccak
+                                
+                                self.newCellViewModels.append(NewsCellViewModel(title: result.name, description: result.description, imageUrlString: result.image, newUrlString: result.url))
                             }
                       
-                        }
+                        
                     }else{
                         print("result error")
                     }
@@ -70,9 +88,7 @@ class HomePageViewModel : IHomePageViewModel{
         firebaseManager.logOut()
     }
     
-    private var categoryList = ["General" , "Economy" , "Technology" , "Health" , "Sport"]
-    
-    private var newsList : [Result] = []
+
     
 }
 
@@ -82,43 +98,14 @@ extension HomePageViewModel {
         if section == 0{
             return categoryList.count
         }else{
-            return newsList.count
+            return newCellViewModels.count
         }
     }
     
     public func getCategory(indexPath : IndexPath) -> String{
         return self.categoryList[indexPath.row]
     }
-    
-    public func cellForItem(collectionView : UICollectionView ,indexPath: IndexPath ,cellId : String ) -> UICollectionViewCell{
-        if cellId == CategoryCell.id{
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! CategoryCell
-            cell.setupCategoryButtons(title: getCategory(indexPath: indexPath))
-            return cell
-        }
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! NewsCell
-        cell.configureNewsCell(title: self.newsList[indexPath.row].name, description: self.newsList[indexPath.row].description, imageUrlString: self.newsList[indexPath.row].image, newUrlString: self.newsList[indexPath.row].url)
-        return cell
-    }
+   
   
-    
-   public func categoryCollectionViewSetup(height : Double , width :Double) -> UICollectionViewFlowLayout{
-        let categoryCollectionlayout = UICollectionViewFlowLayout()
-        categoryCollectionlayout.itemSize = CGSize(width: width , height: height )
-        categoryCollectionlayout.scrollDirection = .horizontal
-        categoryCollectionlayout.minimumLineSpacing = 15
-        categoryCollectionlayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        
-        return categoryCollectionlayout
-    }
-    
-    public func newsCollectionViewSetup(height : Double , width :Double) -> UICollectionViewFlowLayout{
-        let newsCollectionLayout = UICollectionViewFlowLayout()
-       newsCollectionLayout.itemSize = CGSize(width: width , height: height)
-        newsCollectionLayout.scrollDirection = .vertical
-        newsCollectionLayout.minimumInteritemSpacing = 15
-        newsCollectionLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        
-        return newsCollectionLayout
-    }
+
 }

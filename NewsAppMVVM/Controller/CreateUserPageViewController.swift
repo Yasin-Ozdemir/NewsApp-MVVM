@@ -10,7 +10,8 @@ import UIKit
 
 
 class CreateUserPageViewController: UIViewController {
-  
+    var signPagesViewModel : SignPagesViewModel?
+    
     private let mailTextField : UITextField = {
         var txtfield = UITextField()
         var attr = NSAttributedString(string: "E-Mail", attributes: [NSAttributedString.Key.foregroundColor : UIColor.lightGray])
@@ -80,18 +81,23 @@ class CreateUserPageViewController: UIViewController {
     }
     
     @objc func createUser(){
+        guard let signPagesViewModel = signPagesViewModel else{
+            return
+        }
         let mail = mailTextField.text!
         let password = passwordTextField2.text!
         if mail.isEmpty == false && password.isEmpty == false{
-            SignPagesViewModel.signPagesVM.createUser(mail: mail, password: password) { err in
+            signPagesViewModel.createUser(mail: mail, password: password) { err in
                 if err == nil{
-                    self.present(AlertManager.manager.showAlert(title: "USER CREATED", message: "You Can Log In"), animated: true)
-                    self.backLoginVC()
+                    
                     
                 }else{
                     self.present(AlertManager.manager.showAlert(title: "ERROR", message: err!.localizedDescription), animated: true)
                 }
+             
             }
+            
+            self.backLoginVC()
            
         }else{
             self.present(AlertManager.manager.showAlert(title: "ERROR", message: "Please Enter Your Mail/Password"), animated: true)

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -18,16 +19,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        let rootVC = LoginPageViewController()
+        let rootVC : UIViewController =  LoginPageViewController()
         let window = UIWindow(windowScene: windowScene)
         let navigationController = UINavigationController(rootViewController: rootVC)
-        
-       // navigationController.setupNavBar(backgroundColor: .systemOrange, textColor: .black, tintColor: .black)  
-        
-        
-        
+      
+       
+  
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
+        if Auth.auth().currentUser != nil{
+            let homePageVC = UINavigationController(rootViewController: HomePageViewController())
+            homePageVC.modalPresentationStyle = .fullScreen
+            rootVC.present(homePageVC, animated: true)
+        }
         self.window = window
     }
 

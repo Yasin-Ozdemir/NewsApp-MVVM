@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "D52ECA52-5413-4742-978F-F274FDD51EDA"
+            uuid = "A7195664-CFDA-43EA-92F2-DAA080348357"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "NewsAppMVVM/ViewModel/HomePageViewModel.swift"
+            filePath = "NewsAppMVVMTests/HomePageViewModelTests.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "116"
-            endingLineNumber = "116"
-            landmarkName = "newsCollectionViewSetup(height:width:)"
+            startingLineNumber = "98"
+            endingLineNumber = "98"
+            landmarkName = "test_logOut()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

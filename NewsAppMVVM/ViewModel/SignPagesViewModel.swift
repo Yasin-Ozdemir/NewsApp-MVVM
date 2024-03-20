@@ -8,19 +8,16 @@
 import Foundation
 import FirebaseAuth
 class SignPagesViewModel{
-    private init(){
-        
-    }
-   
     
-    static var signPagesVM = SignPagesViewModel()
-    private let firebaseManager = FirebaseManager()
+    var firebaseManager : IFireBaseManager = FirebaseManager()
    
-    func signIn(mail : String , password :String , completion : @escaping (Error?)-> Void) {
+    func signIn(mail : String , password :String , completion : @escaping (Void?,Error?)-> Void) {
         let user = User(mail: mail , password:  password)
-        firebaseManager.signIn(user: user) { result, error in
+        firebaseManager.signIn(user: user) { _, error in
             if error != nil{
-                completion(error!)
+                completion(nil,error!)
+            }else{
+                completion(() , nil)
             }
            
         }
@@ -28,9 +25,11 @@ class SignPagesViewModel{
     
     func createUser(mail :String , password :String , completion : @escaping (Error?)-> Void){
         let newUser = User(mail: mail, password: password)
-        firebaseManager.createUser(user: newUser) { result, error in
+        firebaseManager.createUser(user: newUser) { _, error in
             if error != nil{
                 completion(error!)
+            }else{
+                completion(nil)
             }
             
         }

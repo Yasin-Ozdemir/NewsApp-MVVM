@@ -34,7 +34,7 @@ class NewsCell: UICollectionViewCell {
     }()
     
     private let detailButton : UIButton = {
-        let button  = UIButton(type: UIKit.UIButton.ButtonType.system)
+        let button  = UIButton(type: .custom)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.heavy)
         button.setTitle("Haber Detayı ->", for: UIControl.State.normal)
         
@@ -88,15 +88,15 @@ class NewsCell: UICollectionViewCell {
         addSubview(myView)
     }
     
-   public func configureNewsCell(title : String , description : String , imageUrlString : String , newUrlString : String){
-        guard let imageUrl = URL(string: imageUrlString)  else{
+    public func configureNewsCell(cellViewModel :NewsCellViewModel){
+        guard let imageUrl = URL(string: cellViewModel.imageUrlString)  else{
             return
         }
-        self.newUrlString = newUrlString
+        self.newUrlString = cellViewModel.newUrlString
         newImageView.sd_setImage(with: imageUrl)
         
-        let attr = NSMutableAttributedString(string: title, attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 17, weight: UIFont.Weight.bold) , NSAttributedString.Key.foregroundColor : UIColor.black ])
-        attr.append(NSAttributedString(string: "\n\(description)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 16, weight: UIFont.Weight.medium) , NSAttributedString.Key.foregroundColor : UIColor.black]))
+        let attr = NSMutableAttributedString(string: cellViewModel.title, attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 17, weight: UIFont.Weight.bold) , NSAttributedString.Key.foregroundColor : UIColor.black ])
+        attr.append(NSAttributedString(string: "\n\(cellViewModel.description)", attributes: [NSAttributedString.Key.font : UIFont.systemFont(ofSize: 16, weight: UIFont.Weight.medium) , NSAttributedString.Key.foregroundColor : UIColor.black]))
         
         self.newTextView.attributedText = attr
     }
